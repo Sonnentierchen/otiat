@@ -1,6 +1,8 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/poseviewer/mousecoordinatesmodificationeventfilter.hpp \
+    $$PWD/poseviewer/undomousecoordinatesmodificationeventfilter.hpp \
     $$PWD/settings/settingsloadsavepage.hpp \
     view/splashscreen/splashscreen.hpp \
     view/settings/settingspathspage.hpp \
@@ -29,11 +31,11 @@ HEADERS += \
     view/rendering/objectmodelrenderable.hpp \
     view/rendering/clickvisualizationmaterial.hpp \
     view/rendering/clickvisualizationrenderable.hpp \
-    view/tutorialscreen/tutorialscreen.hpp \
-    view/qt3dwidget/qt3dwidget.hpp \
-    view/qt3dwidget/qt3dwidget_p.hpp
+    view/tutorialscreen/tutorialscreen.hpp
 
 SOURCES += \
+    $$PWD/poseviewer/mousecoordinatesmodificationeventfilter.cpp \
+    $$PWD/poseviewer/undomousecoordinatesmodificationeventfilter.cpp \
     $$PWD/settings/settingsloadsavepage.cpp \
     view/splashscreen/splashscreen.cpp \
     view/gallery/loadingiconmodel.cpp \
@@ -62,8 +64,7 @@ SOURCES += \
     view/rendering/objectmodelrenderablematerial.cpp \
     view/rendering/clickvisualizationmaterial.cpp \
     view/rendering/clickvisualizationrenderable.cpp \
-    view/tutorialscreen/tutorialscreen.cpp \
-    view/qt3dwidget/qt3dwidget.cpp
+    view/tutorialscreen/tutorialscreen.cpp
 
 FORMS += \
     $$PWD/settings/settingsloadsavepage.ui \

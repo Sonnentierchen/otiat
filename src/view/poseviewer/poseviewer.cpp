@@ -1,8 +1,10 @@
 #include "poseviewer.hpp"
 #include "ui_poseviewer.h"
 #include "view/misc/displayhelper.hpp"
+#include "mousecoordinatesmodificationeventfilter.hpp"
 
 #include <QRect>
+#include <QHBoxLayout>
 
 PoseViewer::PoseViewer(QWidget *parent) :
         QWidget(parent),
@@ -10,7 +12,9 @@ PoseViewer::PoseViewer(QWidget *parent) :
         m_poseViewer3DWidget(new PoseViewer3DWidget) {
     ui->setupUi(this);
 
-    m_poseViewer3DWidget->setParent(ui->graphicsContainer);
+    //m_poseViewer3DWidget->setParent(ui->graphicsContainer);
+    ui->graphicsContainer->setLayout(new QHBoxLayout);
+    ui->graphicsContainer->layout()->addWidget(m_poseViewer3DWidget);
 
     DisplayHelper::setIcon(ui->buttonSwitchView, fa::toggleoff, 18);
     ui->buttonSwitchView->setToolTip("Click to switch views between segmentation \n"
@@ -20,6 +24,11 @@ PoseViewer::PoseViewer(QWidget *parent) :
     DisplayHelper::setIcon(ui->buttonResetPosition, fa::arrows, 18);
     ui->buttonResetPosition->setToolTip("Click to reset the position of the image.");
     ui->buttonResetPosition->setEnabled(false);
+
+    // Should be configurable later in settings
+    ui->sliderZoom->setMaximum(m_maxZoom);
+    m_ignoreZoomSliderChange = true;
+    ui->sliderZoom->setValue(m_maxZoom / 2.f);
 
     // Those two buttons are not actual buttons but show helper icons
     // They are buttons and not labels so that they can get activated and deactivated
@@ -33,6 +42,8 @@ PoseViewer::PoseViewer(QWidget *parent) :
             this, &PoseViewer::poseSelected);
     connect(m_poseViewer3DWidget, &PoseViewer3DWidget::snapshotSaved,
             this, &PoseViewer::snapshotSaved);
+    connect(m_poseViewer3DWidget, &PoseViewer3DWidget::zoomChanged,
+            this, &PoseViewer::onZoomChangedBy3DWidget);
 }
 
 PoseViewer::~PoseViewer() {
@@ -176,25 +187,25 @@ void PoseViewer::switchImage() {
 }
 
 void PoseViewer::onOpacityChanged(int opacity) {
-    m_poseViewer3DWidget->setObjectsOpacity(opacity / 100.0);
+    m_poseViewer3DWidget->setAnimatedObjectsOpacity(opacity / 100.0);
 }
 
-void PoseViewer::onZoomChanged(int zoom) {
-    this->m_zoom = zoom;
-    this->m_zoomMultiplier = zoom / 5.f;
-    this->ui->labelZoom->setText(QString::number(this->m_zoomMultiplier * 100) + "%");
-    QSize oldSize = m_poseViewer3DWidget->size();
-    QSize newSize = QSize(m_poseViewer3DWidget->imageSize().width() * this->m_zoomMultiplier,
-                          m_poseViewer3DWidget->imageSize().height() * this->m_zoomMultiplier);
-    QSize diff = QSize(newSize.width() - oldSize.width(), newSize.height() - oldSize.height());
-    m_poseViewer3DWidget->setGeometry(QRect(m_poseViewer3DWidget->x() - diff.width() / 2,
-                                            m_poseViewer3DWidget->y() - diff.height() / 2,
-                                            newSize.width(), newSize.height()));
+void PoseViewer::onSliderZoomValueChanged(int zoom) {
+    if (!m_ignoreZoomSliderChange) {
+        this->ui->labelZoom->setText(QString::number(zoom) + "%");
+        m_poseViewer3DWidget->setAnimatedZoom(zoom);
+    }
+    m_ignoreZoomSliderChange = false;
+}
+
+void PoseViewer::onZoomChangedBy3DWidget(int zoom) {
+    m_ignoreZoomSliderChange = true;
+    ui->sliderZoom->setValue(zoom);
+    ui->labelZoom->setText(QString::number(zoom) + "%");
 }
 
 void PoseViewer::resetPositionOfGraphicsView() {
-    m_poseViewer3DWidget->move(-m_poseViewer3DWidget->width() / 2 + width() / 2,
-                               -m_poseViewer3DWidget->height() / 2 + height() / 2);
+    m_poseViewer3DWidget->setRenderingPosition(0, 0);
 }
 
 void PoseViewer::onImageClicked(QPoint point) {

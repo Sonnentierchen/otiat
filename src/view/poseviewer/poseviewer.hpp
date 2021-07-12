@@ -65,7 +65,9 @@ private Q_SLOTS:
      */
     void switchImage();
     void onOpacityChanged(int opacity);
-    void onZoomChanged(int zoom);
+    // TODO rename to onZoomSliderValueChanged
+    void onSliderZoomValueChanged(int zoom);
+    void onZoomChangedBy3DWidget(int zoom);
     void resetPositionOfGraphicsView();
     void onImageClicked(QPoint point);
     // To get the new mouse buttons
@@ -87,8 +89,13 @@ private:
     // segmentation image
     bool m_showingNormalImage = true;
 
+    MouseCoordinatesModificationEventFilter *mouseCoordinatesModificationEventFilter;
+
     int m_zoom = 3;
     float m_zoomMultiplier = 1.f;
+    int m_maxZoom = 200;
+
+    bool m_ignoreZoomSliderChange = false;
 };
 
 #endif // CORRESPONDENCEEDITOR_H
